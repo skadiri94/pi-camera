@@ -35,11 +35,6 @@ def generate_key():
         private_key_file = open("secrete-rsa.pem", "w")
         private_key_file.write(encrypted_pem_private_key.decode())
         private_key_file.close()
-        
-        private_key_file = open("secrete-rsa1.pem", "w")
-        private_key_file.write(p_key.decode())
-        private_key_file.close()
-
 
         public_key_file = open("secrete-rsa.pub", "w")
         public_key_file.write(pem_public_key.decode())

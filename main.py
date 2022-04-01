@@ -56,7 +56,8 @@ def login():
     
     public_key = get_keys(get_generated_key())
     keys = get_generated_key()
-    private_key = keys[0]
+    if keys != None:
+        private_key = keys[0]
     
     if request.method == "POST":
 
