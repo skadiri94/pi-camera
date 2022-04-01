@@ -1,15 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-    <h1>Login</h1>
-    <form method="post">
-      <label>Public Key: </label><input name="publickey" ></input>
-      
-      <input type="submit" /></form>
-    </form>
+{% extends 'base.html' %}
+{% block content %}
 
-</body>
-</html>
+<div class="row">
+    <div class="col-md-4 offset-3">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-danger">
+            {{ messages[0] }}
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+</div>
+<div style="margin-top:30px" class="row">
+    <div class="col-md-5 offset-3">
+        <form method="post" action="/login">
+            <div class="form-group">
+                <label for="publickey">Public Key</label>
+                <input name="publickey" type="text" class="form-control" id="publickey" placeholder="Public Key">
+            </div>
+      
+            <button type="submit" class="btn btn-primary mb-2">Login</button>
+            <a href="{{ url_for('register') }}">
+            <button type="button" class="btn btn-primary mb-2" role="button">New User</button>
+        </a>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+  
+  var getAcc = async function () {
+  var web3 = new Web3(window.ethereum);
+    try {
+      const accounts = await window.ethereum.send(
+        "eth_requestAccounts"
+      );
+      const address = accounts.result[0];
+      const signed_msg = web3.eth.personal.sign("Hello from Toptal!", address);
+      console.log('accounts',signed_msg);
+     } catch(error){
+         alert("Please Install Metamask Wallet");
+         console.log('Error',error);
+         
+     }
+    }
+    getAcc();
+    </script>
+{% endblock %}
