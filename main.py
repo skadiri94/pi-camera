@@ -1,5 +1,7 @@
 from flask import Flask, render_template, make_response,Response, request,session, jsonify, redirect, url_for,flash
 import jwt
+import uuid
+from uuid import getnode as get_mac
 from flask_qrcode import QRcode
 from datetime import datetime, timedelta
 from functools import wraps
@@ -19,7 +21,10 @@ pi_camera = VideoCamera(flip=False) # flip pi camera if upside down.
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "Secrete_key"
 QRcode(app)
-print(Blockchain())
+mac_addr = get_mac()
+bindingInfo = Blockchain().getBindingInfo(str(mac_addr))
+print(bindingInfo)
+
 def token_required(func):
     # decorator factory which invoks update_wrapper() method and passes decorated function as an argument
     @wraps(func)
@@ -28,15 +33,16 @@ def token_required(func):
         if 'token' in session:
             token = session['token']
         if not token:
-            return jsonify({'Alert!': 'Token is missing!'}), 401
+            return render_template("login.html"), 401
 
         try:
             keys = get_generated_key()
             public_key = keys[1]
             public_key = public_key
             data = jwt.decode(token, public_key, algorithms=['RS256'])
+            
         except:
-            return jsonify({'Message': 'Invalid token'}), 403
+            return render_template("login.html"), 403
         return func(*args, **kwargs)
     return decorated
 
@@ -45,6 +51,11 @@ def token_required(func):
 @token_required
 def index():
     return render_template('index.html') 
+
+@app.route('/nonce', methods=['GET'])
+def nonce():
+    nonce = generate_nonce()
+    return jsonify({'Message' : nonce}),200 
 
 @app.route('/auth')
 @token_required
@@ -78,12 +89,20 @@ def login():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        public_key = get_keys(generate_key())
-        if public_key == None:
-            return 'User exist in this device'
+        if bindingInfo[1] == False:
+            userAdd = request.form['address']
+            res = Blockchain().bindCam(str(mac_addr),userAdd)
+            if res == 1:
+                return render_template("login.html")
+            else:
+                return jsonify({'Message' : 'User exist in this device'})
         else:
-            return jsonify({'Public Key': public_key})
+            return jsonify({'Message' :'Device is corrently binded'})
     return render_template("register.html")   
+
+def generate_nonce():
+    """Generate pseudorandom number."""
+    return uuid.uuid4().hex
     
 def gen(camera):
     #get camera frame

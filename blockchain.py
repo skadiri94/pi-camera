@@ -18,7 +18,7 @@ class Blockchain:
 
         abi = json.loads('[{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"userId","type":"address"}],"name":"DeviceBinded","type":"event"},{"inputs":[{"internalType":"string","name":"_device_id","type":"string"},{"internalType":"address","name":"_userId","type":"address"}],"name":"bindDevice","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_deviceId","type":"string"}],"name":"getBindingInfo","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_device_id","type":"string"}],"name":"resetBinding","outputs":[],"stateMutability":"nonpayable","type":"function"}]')
         address = web3.toChecksumAddress(
-            '0xD649683CB32955bE9691B3d7E8D57d45A64EDa21')
+            '0xb0Dbbc42B782f5E5EE3faF72b71BFbdE29E8DDBB')
 
         self.contract = web3.eth.contract(address=address, abi=abi)
 
@@ -28,6 +28,7 @@ class Blockchain:
     def bindCam(self, _camAdd, _userAdd):
 
         try:
+            _userAdd = self.web3.toChecksumAddress(_userAdd)
             tx_hash = self.contract.functions.bindDevice(_camAdd,
                                                          _userAdd).transact()
             receipt = self.web3.eth.waitForTransactionReceipt(tx_hash)

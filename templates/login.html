@@ -28,7 +28,16 @@
     </div>
 </div>
 <script type="text/javascript">
-  
+    var nonce = "";
+   fetch('/nonce')
+      .then(function (response) {
+          return response.json();
+      }).then(function (text) {
+          console.log('GET response:');
+          console.log(text.Message); 
+          nonce = text.Message;
+      });
+
   var getAcc = async function () {
   var web3 = new Web3(window.ethereum);
     try {
@@ -36,7 +45,8 @@
         "eth_requestAccounts"
       );
       const address = accounts.result[0];
-      const signed_msg = web3.eth.personal.sign("Hello from Toptal!", address);
+      console.log(" @:: ", nonce); 
+      const signed_msg = web3.eth.personal.sign(`Singning one-time nonce: ${nonce}`, address);
       console.log('accounts',signed_msg);
      } catch(error){
          alert("Please Install Metamask Wallet");
