@@ -1,6 +1,9 @@
 from flask import Flask, render_template, make_response,Response, request,session, jsonify, redirect, url_for,flash
 import jwt
 import uuid
+from web3 import Web3
+from hexbytes import HexBytes
+from eth_account.messages import encode_defunct
 from uuid import getnode as get_mac
 from flask_qrcode import QRcode
 from datetime import datetime, timedelta
@@ -23,6 +26,8 @@ app.config['SECRET_KEY'] = "Secrete_key"
 QRcode(app)
 mac_addr = get_mac()
 bindingInfo = Blockchain().getBindingInfo(str(mac_addr))
+one_time_nonce = None
+w3 = Web3(Web3.HTTPProvider(""))
 print(bindingInfo)
 
 def token_required(func):
@@ -54,15 +59,39 @@ def index():
 
 @app.route('/nonce', methods=['GET'])
 def nonce():
-    nonce = generate_nonce()
-    return jsonify({'Message' : nonce}),200 
+    global one_time_nonce
+    one_time_nonce  = generate_nonce()
+    return jsonify({'Message' : one_time_nonce}),200 
 
-@app.route('/auth')
-@token_required
+@app.route('/auth', methods=['POST'])
 def auth():
-    return 'JWT is verified. Welcome to your dashboard !  '
+    global one_time_nonce
+    msg = 'Singning one-time nonce:' + str(one_time_nonce )
+    if request.method == "POST":
+        data = request.get_json()
+        temp_signature = data['signature']
+    # We now are in possession of msg, publicAddress and signature. We
+    # can perform an elliptic curve signature verification with ecrecover
+        mesage = encode_defunct(text=msg)
+        address = w3.eth.account.recover_message(mesage,signature=HexBytes(temp_signature ))
+        if address.lower() == bindingInfo[0].lower():
+            keys = get_generated_key()
+            if keys != None:
+                private_key = keys[0]
+                token = jwt.encode({
+                    'user': " Testing",
+                    'exp': datetime.now() + timedelta(seconds=30)
+                }, private_key, algorithm='RS256').decode('utf-8')
+
+                session['token'] = token
+                return redirect(url_for('index'))  
+        
+        
+    else:
+        return make_response('Unable to verify', 403, {'WWW-Authenticate': 'Basic realm: "Authentication Failed "'})
 
 @app.route('/login', methods=['GET', 'POST'])
+@token_required
 def login():
     
     public_key = get_keys(get_generated_key())

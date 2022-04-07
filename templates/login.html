@@ -21,6 +21,7 @@
             </div>
       
             <button type="submit" class="btn btn-primary mb-2">Login</button>
+            <button type="button" class="btn btn-secondary mb-2" id="passless">Passwordless Login</button>
             <a href="{{ url_for('register') }}">
             <button type="button" class="btn btn-primary mb-2" role="button">New User</button>
         </a>
@@ -29,31 +30,80 @@
 </div>
 <script type="text/javascript">
     var nonce = "";
-   fetch('/nonce')
-      .then(function (response) {
-          return response.json();
-      }).then(function (text) {
-          console.log('GET response:');
-          console.log(text.Message); 
-          nonce = text.Message;
-      });
-
-  var getAcc = async function () {
-  var web3 = new Web3(window.ethereum);
+    var publicAddress;
+    var web3;
+    var getAcc = async function () {
+    
     try {
+        web3 = new Web3(window.ethereum);
+
       const accounts = await window.ethereum.send(
         "eth_requestAccounts"
       );
-      const address = accounts.result[0];
-      console.log(" @:: ", nonce); 
-      const signed_msg = web3.eth.personal.sign(`Singning one-time nonce: ${nonce}`, address);
-      console.log('accounts',signed_msg);
+      publicAddress = accounts.result[0];
+    //   const signed_msg = web3.eth.personal.sign(`Singning one-time nonce: ${nonce}`, address);
+    //   console.log('accounts',signed_msg);
      } catch(error){
          alert("Please Install Metamask Wallet");
          console.log('Error',error);
          
      }
     }
-    getAcc();
+   
+
+    handleSignMessage = ({publicAddress, nonce }) => {
+    return new Promise((resolve, reject) =>
+    web3.eth.personal.sign(`Singning one-time nonce:${nonce}`, publicAddress,
+        (err, signature) => {
+          if (err) return reject(err);
+          return resolve({ publicAddress, signature });
+        }
+      )
+    );
+  };
+
+  handleAuth = ({ publicAddress, signature }) =>  {
+  fetch('/auth',{
+      body: JSON.stringify({ publicAddress, signature }),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      method: 'POST'
+    }).then(response => response.json());
+  };
+
+  handleRedirect = ({status}) => {
+   console.log(status);
+    if (status == 200)
+        window.location.reload(true);
+  }
+
+  
+    async function main() {
+    try {
+        await getAcc();
+
+        fetch('/nonce')
+      .then(function (response) {
+          return response.json();
+      }).then(function (text) {
+          console.log('GET response:');
+          console.log(text.Message); 
+          nonce = text.Message;
+          return {publicAddress, nonce}
+
+      }).then(this.handleSignMessage)
+      .then(this.handleAuth)
+      .then(this.handleRedirect);
+
+ 
+    }catch (err) {
+        console.log("There was an error fetching the data: \n", error)
+    }};
+
+    var button = document.getElementById('passless');
+
+    button.onclick = function() {
+    main();}
     </script>
 {% endblock %}
