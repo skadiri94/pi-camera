@@ -10,7 +10,7 @@ class Blockchain:
         self.contract = None
         self.web3 = None
 
-        ganache_url = "HTTP://192.168.1.2:7545"
+        ganache_url = "HTTP://192.168.243.79:7545"
         web3 = Web3(Web3.HTTPProvider(ganache_url))
         web3.eth.defaultAccount = web3.eth.accounts[0]
         print(web3.isConnected())
@@ -18,7 +18,7 @@ class Blockchain:
 
         abi = json.loads('[{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"userId","type":"address"}],"name":"DeviceBinded","type":"event"},{"inputs":[{"internalType":"string","name":"_device_id","type":"string"},{"internalType":"address","name":"_userId","type":"address"}],"name":"bindDevice","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_deviceId","type":"string"}],"name":"getBindingInfo","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_device_id","type":"string"}],"name":"resetBinding","outputs":[],"stateMutability":"nonpayable","type":"function"}]')
         address = web3.toChecksumAddress(
-            '0xb0Dbbc42B782f5E5EE3faF72b71BFbdE29E8DDBB')
+            '0x03c71b3cf2B005337901600312B16c16C1BC86a6')
 
         self.contract = web3.eth.contract(address=address, abi=abi)
 

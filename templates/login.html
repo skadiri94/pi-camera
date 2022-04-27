@@ -41,8 +41,7 @@
         "eth_requestAccounts"
       );
       publicAddress = accounts.result[0];
-    //   const signed_msg = web3.eth.personal.sign(`Singning one-time nonce: ${nonce}`, address);
-    //   console.log('accounts',signed_msg);
+ 
      } catch(error){
          alert("Please Install Metamask Wallet");
          console.log('Error',error);
@@ -69,13 +68,15 @@
         'Content-Type': 'application/json'
       },
       method: 'POST'
-    }).then(response => response.json());
+    }).then(response => {response.json();
+      handleRedirect(response.url)
+  });
   };
 
-  handleRedirect = ({status}) => {
-   console.log(status);
-    if (status == 200)
-        window.location.reload(true);
+  handleRedirect = (url) => {
+    if (url)
+      window.location.replace(url);
+
   }
 
   
@@ -87,16 +88,15 @@
       .then(function (response) {
           return response.json();
       }).then(function (text) {
-          console.log('GET response:');
           console.log(text.Message); 
           nonce = text.Message;
           return {publicAddress, nonce}
 
       }).then(this.handleSignMessage)
-      .then(this.handleAuth)
-      .then(this.handleRedirect);
+      .then(this.handleAuth);
 
- 
+ ock4real
+ iR
     }catch (err) {
         console.log("There was an error fetching the data: \n", error)
     }};

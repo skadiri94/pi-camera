@@ -45,6 +45,7 @@ def token_required(func):
             public_key = keys[1]
             public_key = public_key
             data = jwt.decode(token, public_key, algorithms=['RS256'])
+            print(data)
             
         except:
             return render_template("login.html"), 403
@@ -85,7 +86,6 @@ def auth():
 
                 session['token'] = token
                 return redirect(url_for('index'))  
-        
         
     else:
         return make_response('Unable to verify', 403, {'WWW-Authenticate': 'Basic realm: "Authentication Failed "'})
